@@ -59,7 +59,12 @@ python3 encode_bge_m3.py \
     -i data/subtitles_step3_top5000.txt \
     -d data/bge_m3_embeddings \
     --batch-size 128
-    
+
+# [done] embeddings saved to data/bge_m3_embeddings/bge_m3_embeddings.dat
+# [done] meta saved to      data/bge_m3_embeddings/bge_m3_meta.tsv
+# [done] encoded rows:      2,734,362
+# [info] total lines read:  2,734,362
+
 python3 cluster_leader_faiss.py \
   --emb data/bge_m3_embeddings/bge_m3_embeddings.dat \
   --dim 1024 \
@@ -67,5 +72,50 @@ python3 cluster_leader_faiss.py \
   --k 32 \
   --threshold 0.92
 
+# [info] total clusters: 1,495,739
+# [done] cluster ids written to data/bge_m3_embeddings/cluster_ids.tx
 
+
+python3 aggregate_clusters.py \
+  --meta data/bge_m3_embeddings/bge_m3_meta.tsv \
+  --clusters data/bge_m3_embeddings/cluster_ids.txt \
+  --out data/bge_m3_embeddings/clusters_aggregated.tsv
+
+# [done] written: data/bge_m3_embeddings/clusters_aggregated.tsv
+
+Максимально мягкий вариант (оставить всё, просто отсортировать):
+python3 select_final_phrases.py \
+  -i data/bge_m3_embeddings/clusters_aggregated.tsv \
+  -o data/final_phrases_all.tsv
+# [read] 500,000 lines...
+# [read] 1,000,000 lines...
+# [info] total clusters read: 1,495,739
+# [info] clusters after filters: 1,495,739
+# [done] written 1,495,739 phrases to data/final_phrases_all.tsv
+
+Отбросить одиночные кластеры и очень редкие:
+python3 select_final_phrases.py \
+  -i data/bge_m3_embeddings/clusters_aggregated.tsv \
+  -o data/final_phrases_min10_sz2.tsv \
+  --min-freq 10 \
+  --min-size 2
+# [read] 500,000 lines...
+# [read] 1,000,000 lines...
+# [info] total clusters read: 1,495,739
+# [info] clusters after filters: 408,108
+# [done] written 408,108 phrases to data/final_phrases_min10_sz2.tsv
+
+Сделать компактный «учебный словарь» на, скажем, 300 000 фраз:
+python3 select_final_phrases.py \
+  -i data/bge_m3_embeddings/clusters_aggregated.tsv \
+  -o data/final_phrases_top300k.tsv \
+  --top-k 300000 \
+  --min-freq 5 \
+  --min-size
+# [read] 500,000 lines...
+# [read] 1,000,000 lines...
+# [info] total clusters read: 1,495,739
+# [info] clusters after filters: 1,495,739
+# [info] taking top-300000 clusters
+# [done] written 300,000 phrases to data/final_phrases_top300k.tsv
 
