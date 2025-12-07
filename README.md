@@ -106,12 +106,13 @@ python3 select_final_phrases.py \
 # [done] written 408,108 phrases to data/final_phrases_min10_sz2.tsv
 
 Сделать компактный «учебный словарь» на, скажем, 300 000 фраз:
+
 python3 select_final_phrases.py \
   -i data/bge_m3_embeddings/clusters_aggregated.tsv \
   -o data/final_phrases_top300k.tsv \
   --top-k 300000 \
   --min-freq 5 \
-  --min-size
+  --min-size 1
 # [read] 500,000 lines...
 # [read] 1,000,000 lines...
 # [info] total clusters read: 1,495,739
@@ -202,4 +203,31 @@ load_corpus_to_db.py
 # phrases             : 300,000
 # phrase_words        : 1,028,235
 
+python3 delete_repeated_phrases.py
+# [INFO] Connecting to PostgreSQL…
+# [INFO] Searching for phrases with repeated words…
+# [INFO] Found 5,638 phrases with repeated words.
+# [INFO] Deleting from phrase_words…
+# [OK] phrase_words deleted: 22,121
+# [INFO] Deleting from phrases…
+# [OK] phrases deleted: 5,184
+# [DONE] Completed.
+# [DONE] Removed phrases with repeated words: 5,638
+
+
+INSERT INTO users (name) VALUES ('default_user') RETURNING id;
+python3 srs_next_phrase_db.py --user-id 1
+# INTRO : 1
+# [INFO] Word state stats for user_id=1:
+#  NEW   : 4,998
+#
+# === NEXT PHRASE ===
+# phrase_id : 19
+# phrase    : así es
+# target    : 'así'
+# freq      : 153696
+# n_new / n_intro / n_learn : 1 / 1 / 0
+# mode      : STRICT
+#
+# [INFO] History updated, target word marked as INTRO (if it was NEW).
 
