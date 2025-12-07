@@ -173,3 +173,33 @@ python3 srs_next_phrase.py --index-dir data/index_srs \
 # length    : 2
 # n_new / n_intro / n_learn : 1 1 0
 
+wc -m data/final_phrases_top300k.tsv
+# 7253712 data/final_phrases_top300k.tsv
+
+python3 restore_question_marks.py \
+  -i data/final_phrases_top300k.tsv \
+  -o data/final_phrases_top300k_qrestored.tsv
+# [progress] 200,000 lines processed, 16,297 marked as questions
+# [done] total lines: 300,000
+# [done] questions marked: 23,158
+# [done] percentage: 7.72 %
+
+load_corpus_to_db.py
+# [INFO] Connecting to PostgreSQL...
+# [INFO] Creating schema...
+# [OK] Connected.
+# [OK] Schema ready.
+# [INFO] Building data/phrases_for_db.tsv and data/phrase_words_for_db.tsv ...
+# [INFO] Built 300000 phrases (from 300000 lines).
+# [INFO] Truncating tables...
+# [OK] Tables truncated.
+# [LOAD] Importing into words from data/index_srs/words.tsv ...
+# [LOAD] Importing into phrases from data/phrases_for_db.tsv ...
+# [LOAD] Importing into phrase_words from data/phrase_words_for_db.tsv ...
+#
+# === DATABASE STATISTICS ===
+# words               : 4,999
+# phrases             : 300,000
+# phrase_words        : 1,028,235
+
+
