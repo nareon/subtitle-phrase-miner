@@ -119,3 +119,57 @@ python3 select_final_phrases.py \
 # [info] taking top-300000 clusters
 # [done] written 300,000 phrases to data/final_phrases_top300k.tsv
 
+python3 build_indices_for_srs.py \
+  -i data/final_phrases_top300k.tsv \
+  --out-dir data/index_srs
+# [info] pass 1: counting word frequencies from data/final_phrases_top300k.tsv
+# [pass1] 200,000 phrases...
+# [info] total phrases read: 300,000
+# [info] vocab size: 4,999
+# [info] building word index...
+# [done] words.tsv written: 4,999 words
+# [info] pass 2: writing phrases and phrase_words...
+# [pass2] 200,000 phrases...
+# [done] phrases.tsv written, total phrases: 300,000
+# [done] phrase_words.tsv written
+
+Скрипт выбора следующей фразы srs_next_phrase.py
+
+Сначала можно сделать пустые файлы состояний (ничего ещё не выучено):
+touch known_words.txt intro_words.txt learn_words.txt
+
+python3 srs_next_phrase.py \
+  --index-dir data/index_srs \
+  --known known_words.txt \
+  --intro intro_words.txt \
+  --learn learn_words.txt
+# [info] loading indices...
+# [info] KNOWN=0, INTRO=0, LEARN=0
+# [info] no phrase in strict mode, relaxing constraints...
+# === NEXT PHRASE ===
+# phrase_id : 0
+# phrase    : está bien
+# target    : bien
+# score     : 0.396
+# freq      : 813176
+# length    : 2
+# n_new / n_intro / n_learn : 2 0 0
+
+echo "bien" >> intro_words.txt
+echo "está" >> intro_words.txt  # если хочешь вводить оба
+
+python3 srs_next_phrase.py --index-dir data/index_srs \
+  --known known_words.txt \
+  --intro intro_words.txt \
+  --learn learn_words.txt
+# [info] loading indices...
+# [info] KNOWN=0, INTRO=2, LEARN=0
+# === NEXT PHRASE ===
+# phrase_id : 6
+# phrase    : muy bien
+# target    : muy
+# score     : -0.230
+# freq      : 384424
+# length    : 2
+# n_new / n_intro / n_learn : 1 1 0
+
